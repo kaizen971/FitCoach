@@ -19,3 +19,19 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# Backend uploads
+backend/uploads/
