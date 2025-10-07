@@ -24,7 +24,7 @@ export default function HomeScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImagePickerAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [3, 4],
@@ -34,6 +34,46 @@ export default function HomeScreen({ navigation }) {
     if (!result.canceled) {
       setPhoto(result.assets[0]);
     }
+  };
+
+  const takePhoto = async () => {
+    // Request camera permissions
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission requise', 'L\'accès à la caméra est nécessaire pour prendre une photo');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setPhoto(result.assets[0]);
+    }
+  };
+
+  const showImageOptions = () => {
+    Alert.alert(
+      'Ajouter une photo',
+      'Choisissez une option',
+      [
+        {
+          text: 'Prendre une photo',
+          onPress: takePhoto
+        },
+        {
+          text: 'Choisir depuis la galerie',
+          onPress: pickImage
+        },
+        {
+          text: 'Annuler',
+          style: 'cancel'
+        }
+      ]
+    );
   };
 
   const generateWorkout = async () => {
@@ -166,7 +206,7 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.label}>Photo (optionnel)</Text>
           <TouchableOpacity
             style={styles.photoButton}
-            onPress={pickImage}
+            onPress={showImageOptions}
           >
             {photo ? (
               <Image source={{ uri: photo.uri }} style={styles.photoPreview} />

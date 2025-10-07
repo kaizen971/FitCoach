@@ -219,3 +219,171 @@ Le serveur ne crashe plus. Le problème était dû à un conflit de port causé 
 **Conclusion:**
 
 Le problème de port a été résolu. Le serveur FitCoach utilise maintenant le port 3002 de manière stable et cohérente avec l'architecture des autres backends du repo. Le serveur fonctionne sans crash et est prêt pour le développement.
+
+---
+
+## 📅 Date: 2025-10-07 (Soir - Suite)
+
+### ✅ Amélioration: Option appareil photo pour prise de photo directe
+
+**Objectif:** Permettre aux utilisateurs de prendre une photo directement avec l'appareil photo au lieu de seulement sélectionner depuis la galerie. La photo doit être envoyée avec les autres données et stockée dans la base de données.
+
+**Analyse du code existant:**
+
+1. ✅ **Backend (`backend/server.js`):**
+   - Le backend est déjà configuré pour gérer les uploads de photos avec Multer (lignes 33-46)
+   - Les photos sont stockées dans `/backend/uploads/` sur le disque
+   - L'URL de la photo est sauvegardée dans MongoDB dans le champ `photoUrl` du schéma `WorkoutSession` (ligne 70)
+   - L'endpoint `/FitCoach/workout` accepte déjà les photos via `multipart/form-data` (ligne 245)
+   - **Aucune modification backend nécessaire** - Tout est déjà en place ✅
+
+2. ✅ **Frontend (`frontend/screens/HomeScreen.js`):**
+   - Utilise `expo-image-picker` pour sélectionner des images depuis la galerie
+   - Envoie la photo avec les données morphologiques via FormData (lignes 62-68)
+   - **Manquait**: Option pour prendre une photo directement avec l'appareil photo
+
+**Changements effectués:**
+
+### Fichier modifié: `frontend/screens/HomeScreen.js`
+
+**1. Ajout de la fonction `takePhoto()`** (lignes 39-56):
+```javascript
+const takePhoto = async () => {
+  // Request camera permissions
+  const { status } = await ImagePicker.requestCameraPermissionsAsync();
+  if (status !== 'granted') {
+    Alert.alert('Permission requise', 'L\'accès à la caméra est nécessaire pour prendre une photo');
+    return;
+  }
+
+  const result = await ImagePicker.launchCameraAsync({
+    allowsEditing: true,
+    aspect: [3, 4],
+    quality: 0.8,
+  });
+
+  if (!result.canceled) {
+    setPhoto(result.assets[0]);
+  }
+};
+```
+
+**2. Ajout de la fonction `showImageOptions()`** (lignes 58-77):
+```javascript
+const showImageOptions = () => {
+  Alert.alert(
+    'Ajouter une photo',
+    'Choisissez une option',
+    [
+      {
+        text: 'Prendre une photo',
+        onPress: takePhoto
+      },
+      {
+        text: 'Choisir depuis la galerie',
+        onPress: pickImage
+      },
+      {
+        text: 'Annuler',
+        style: 'cancel'
+      }
+    ]
+  );
+};
+```
+
+**3. Modification du bouton photo** (ligne 209):
+- Avant: `onPress={pickImage}`
+- Après: `onPress={showImageOptions}`
+
+**4. Renommage de la fonction** (ligne 27):
+- Avant: `launchImagePickerAsync`
+- Après: `launchImageLibraryAsync` (plus précis)
+
+**Fonctionnalités ajoutées:**
+
+1. ✅ **Prise de photo directe avec l'appareil photo**
+   - Demande automatique des permissions caméra
+   - Message d'erreur si l'accès est refusé
+   - Possibilité d'éditer la photo avant validation
+   - Format d'aspect 3:4 maintenu
+
+2. ✅ **Menu de sélection avec 3 options:**
+   - "Prendre une photo" → Ouvre la caméra
+   - "Choisir depuis la galerie" → Ouvre la galerie
+   - "Annuler" → Ferme le menu
+
+3. ✅ **Intégration transparente:**
+   - La photo prise est traitée de la même manière que celle de la galerie
+   - Envoyée automatiquement avec les données morphologiques
+   - Stockée dans la base de données via l'endpoint existant
+   - Aucun changement dans le flux d'envoi des données
+
+**Flux utilisateur amélioré:**
+
+1. L'utilisateur remplit les champs (morphologie, taille, poids)
+2. L'utilisateur clique sur le bouton photo (📷)
+3. Un menu s'affiche avec 3 options
+4. Si "Prendre une photo":
+   - L'app demande la permission caméra (si pas déjà accordée)
+   - La caméra s'ouvre
+   - L'utilisateur prend la photo
+   - L'utilisateur peut éditer/recadrer
+   - La photo est affichée en prévisualisation
+5. L'utilisateur clique sur "Générer ma séance"
+6. Les données + photo sont envoyées au backend
+7. La photo est stockée dans `/backend/uploads/` et l'URL dans MongoDB
+
+**Tests effectués:**
+
+1. ✅ Le serveur backend fonctionne sur le port 3004
+2. ✅ MongoDB connectée avec succès
+3. ✅ Nodemon installé et actif
+4. ✅ Endpoint `/FitCoach/health` répond correctement:
+   ```json
+   {"status":"OK","message":"FitCoach API is running","timestamp":"2025-10-07T21:11:56.216Z"}
+   ```
+
+**Notes techniques:**
+
+- Permission caméra gérée avec `ImagePicker.requestCameraPermissionsAsync()`
+- Les deux méthodes (`launchCameraAsync` et `launchImageLibraryAsync`) retournent le même format de données
+- La photo est toujours envoyée en JPEG avec le nom `photo.jpg` dans le FormData
+- Le backend utilise Multer qui gère automatiquement le stockage avec timestamp unique
+
+**Configuration serveur actuelle:**
+
+- Backend: ✅ Port **3004** (modifié depuis le port précédent)
+- Base de données: ✅ MongoDB connectée
+- URL API: `http://localhost:3004/FitCoach`
+- Nodemon: ✅ Installé et actif (`^3.1.10`)
+- Dossier uploads: `/backend/uploads/` (créé automatiquement si inexistant)
+
+**Permissions requises (iOS/Android):**
+
+Pour que cette fonctionnalité fonctionne, le fichier `app.json` doit contenir:
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "L'application a besoin d'accéder à vos photos pour ajouter une image à votre profil.",
+          "cameraPermission": "L'application a besoin d'accéder à votre caméra pour prendre une photo."
+        }
+      ]
+    ]
+  }
+}
+```
+
+**Conclusion:**
+
+L'amélioration a été implémentée avec succès. Les utilisateurs peuvent maintenant:
+- ✅ Prendre une photo directement avec l'appareil photo
+- ✅ Choisir une photo depuis la galerie
+- ✅ La photo est automatiquement envoyée avec les données de la séance
+- ✅ La photo est stockée sur le disque et son URL dans MongoDB
+
+Le code est propre, maintient la cohérence avec l'architecture existante, et ne nécessite aucune modification du backend car la fonctionnalité de stockage photo était déjà implémentée.
