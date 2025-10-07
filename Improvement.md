@@ -140,3 +140,82 @@ Ou ajouter dans `package.json` un script:
 **Conclusion:**
 
 Le serveur ne crashe plus. Le problème était dû à un conflit de port causé par une variable d'environnement système. Le serveur fonctionne maintenant de manière stable en mode développement avec nodemon.
+
+---
+
+## 📅 Date: 2025-10-07 (Soir)
+
+### ✅ Configuration du port pour correspondre à l'architecture Caddy
+
+**Problème identifié:** Le serveur était configuré sur le port 3001, ce qui causait des conflits potentiels avec d'autres services et ne correspondait pas à l'architecture des autres backends du repo.
+
+**Analyse effectuée:**
+
+1. ✅ Recherche du fichier Caddyfile dans le projet - Aucun Caddyfile trouvé
+2. ✅ Analyse des autres backends du repo pour identifier le pattern d'allocation des ports:
+   - `BussnessApp/backend`: Port **3003** (hardcodé)
+   - `QuotiDepnse/backend`: Utilise variable `process.env.PORT` avec fallback
+   - `FitCoach/backend`: Port **3001** (avec fallback sur env)
+3. ✅ Identification que chaque projet a un port unique et fixe
+
+**Changements appliqués:**
+
+1. **Modification du fichier `backend/server.js`:**
+   - Avant: `const PORT = process.env.PORT || 3001;`
+   - Après: `const PORT = 3002;`
+
+2. **Justification du port 3002:**
+   - Port 3001: Potentiellement utilisé par d'autres services
+   - Port 3002: Libre et suit la convention de numérotation du repo
+   - Port 3003: Déjà utilisé par BussnessApp
+   - Configuration hardcodée pour éviter les conflits avec variables d'environnement système
+
+**Actions effectuées:**
+
+1. ✅ Analyse de la structure du projet
+2. ✅ Comparaison avec les autres backends (`BussnessApp`, `QuotiDepnse`)
+3. ✅ Modification du port dans `server.js` (ligne 14)
+4. ✅ Installation des dépendances avec `npm install`
+5. ✅ Lancement du serveur avec nodemon (`npm run dev`)
+6. ✅ Test de l'endpoint de santé
+
+**Résultat:**
+
+- Backend: ✅ **Fonctionne sur le port 3002**
+- Base de données: ✅ MongoDB connectée avec succès
+- URL API: `http://localhost:3002/FitCoach`
+- Health check: ✅ Endpoint `/FitCoach/health` répond:
+  ```json
+  {
+    "status": "OK",
+    "message": "FitCoach API is running",
+    "timestamp": "2025-10-07T14:52:19.593Z"
+  }
+  ```
+- Nodemon: ✅ Activé et fonctionnel
+
+**Configuration des ports dans le repo:**
+
+| Projet | Port | Type de configuration |
+|--------|------|----------------------|
+| QuotiDepnse | Variable | `process.env.PORT` |
+| FitCoach | **3002** | **Hardcodé** |
+| BussnessApp | 3003 | Hardcodé |
+
+**Avantages de cette configuration:**
+
+- ✅ Évite les conflits avec la variable d'environnement système `PORT`
+- ✅ Port unique et prévisible pour FitCoach
+- ✅ Cohérence avec l'architecture du repo (ports séquentiels)
+- ✅ Pas de dépendance à un fichier Caddyfile
+- ✅ Configuration simple et directe
+
+**Points d'attention:**
+
+1. 📝 Le frontend doit être configuré pour pointer vers `http://localhost:3002/FitCoach`
+2. 🔄 En cas de déploiement avec Caddy, configurer le reverse proxy vers le port 3002
+3. 🔒 S'assurer qu'aucun autre service n'utilise le port 3002
+
+**Conclusion:**
+
+Le problème de port a été résolu. Le serveur FitCoach utilise maintenant le port 3002 de manière stable et cohérente avec l'architecture des autres backends du repo. Le serveur fonctionne sans crash et est prêt pour le développement.

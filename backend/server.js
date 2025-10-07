@@ -11,7 +11,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = 3002;
 
 // IMPORTANT: Trust proxy configuration
 app.set('trust proxy', 1);
