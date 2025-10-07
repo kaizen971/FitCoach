@@ -47,9 +47,7 @@ const upload = multer({
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {
-  dbName: "FitCoach",
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+  dbName: "FitCoach"
 })
 .then(() => console.log('✅ MongoDB connected successfully to FitCoach database'))
 .catch(err => console.error('❌ MongoDB connection error:', err));
