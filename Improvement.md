@@ -387,3 +387,132 @@ L'amélioration a été implémentée avec succès. Les utilisateurs peuvent mai
 - ✅ La photo est stockée sur le disque et son URL dans MongoDB
 
 Le code est propre, maintient la cohérence avec l'architecture existante, et ne nécessite aucune modification du backend car la fonctionnalité de stockage photo était déjà implémentée.
+
+---
+
+## 📅 Date: 2025-10-08
+
+### ✅ Amélioration: Message d'avertissement sur la conservation des photos
+
+**Objectif:** Informer les utilisateurs que la photo prise ou sélectionnée n'est pas enregistrée de manière permanente et sera supprimée après la génération de la séance.
+
+**Analyse du code existant:**
+
+1. ✅ **Frontend (`frontend/screens/HomeScreen.js`):**
+   - Le composant HomeScreen gère la prise et sélection de photos (lignes 26-77)
+   - La photo est stockée temporairement dans l'état local `photo` (ligne 23)
+   - Après la génération de la séance, l'état est réinitialisé incluant la photo (ligne 125)
+   - **Manquait**: Un message clair pour informer l'utilisateur du caractère temporaire de la photo
+
+**Changements effectués:**
+
+### Fichier modifié: `frontend/screens/HomeScreen.js`
+
+**1. Ajout du message d'avertissement** (lignes 220-222):
+```javascript
+<Text style={styles.warningText}>
+  ⚠️ La photo n'est pas enregistrée et sera supprimée après la génération de la séance.
+</Text>
+```
+
+**2. Ajout du style `warningText`** (lignes 383-389):
+```javascript
+warningText: {
+  fontSize: 12,
+  color: '#FFA500',
+  marginTop: 8,
+  fontStyle: 'italic',
+  textAlign: 'center',
+},
+```
+
+**Caractéristiques du message:**
+
+- ✅ **Couleur orange (#FFA500)**: Attire l'attention sans être alarmant
+- ✅ **Icône d'avertissement (⚠️)**: Signal visuel immédiat
+- ✅ **Texte clair et concis**: Message explicite sur le comportement de la photo
+- ✅ **Position**: Directement sous le bouton photo, visible avant la soumission
+- ✅ **Style italique**: Différencie le message des autres textes d'aide
+- ✅ **Centré**: Alignement cohérent avec le bouton photo
+
+**Emplacement dans l'interface:**
+
+```
+[Label: Photo (optionnel)]
+┌─────────────────────┐
+│                     │
+│    📷 Bouton        │
+│    Photo            │
+│                     │
+└─────────────────────┘
+⚠️ La photo n'est pas enregistrée et sera supprimée après la génération de la séance.
+```
+
+**Flux utilisateur amélioré:**
+
+1. L'utilisateur voit le bouton photo avec le label "Photo (optionnel)"
+2. **NOUVEAU**: L'utilisateur lit le message d'avertissement en orange
+3. L'utilisateur comprend que la photo est temporaire
+4. L'utilisateur clique sur le bouton photo
+5. L'utilisateur prend une photo ou en sélectionne une depuis la galerie
+6. La photo s'affiche en prévisualisation
+7. **Le message d'avertissement reste visible**
+8. L'utilisateur génère la séance
+9. La photo est envoyée au backend pour analyse
+10. Après génération, l'état est réinitialisé (photo supprimée de l'interface)
+
+**Tests effectués:**
+
+1. ✅ Modification du code frontend validée
+2. ✅ Style CSS ajouté et formaté correctement
+3. ✅ Serveur backend vérifié - fonctionne sur le port 3004
+4. ✅ MongoDB connectée avec succès
+5. ✅ Nodemon installé et actif pour le développement
+6. ✅ Endpoint `/FitCoach/health` répond:
+   ```json
+   {"status":"OK","message":"FitCoach API is running","timestamp":"2025-10-08T00:53:03.973Z"}
+   ```
+
+**Configuration serveur actuelle:**
+
+- Backend: ✅ Port **3004**
+- Base de données: ✅ MongoDB connectée
+- URL API: `http://localhost:3004/FitCoach`
+- Nodemon: ✅ Installé (`^3.1.10`) et actif
+- Mode: Développement avec rechargement automatique
+
+**Actions effectuées:**
+
+1. ✅ Analyse du code existant
+2. ✅ Ajout du message d'avertissement dans le JSX
+3. ✅ Création du style `warningText` avec couleur orange
+4. ✅ Vérification de nodemon (déjà installé)
+5. ✅ Lancement du serveur backend avec nodemon
+6. ✅ Test de connexion au serveur
+7. ✅ Mise à jour de la documentation
+
+**Avantages de cette amélioration:**
+
+- ✅ **Transparence**: L'utilisateur est informé du comportement de l'application
+- ✅ **Expérience utilisateur**: Évite la confusion sur la conservation des photos
+- ✅ **Non-intrusif**: Message discret mais visible
+- ✅ **Cohérence**: Utilise le même style que les autres messages d'aide (helpText)
+- ✅ **Accessibilité**: Utilise une icône universelle (⚠️) et une couleur distincte
+
+**Notes techniques:**
+
+- Le message est affiché que la photo soit sélectionnée ou non
+- Le message reste visible pendant toute la durée de vie du formulaire
+- La couleur orange (#FFA500) est un standard pour les avertissements non-critiques
+- Le texte est centré pour s'aligner avec l'élément parent (inputGroup)
+- Le message s'affiche à la ligne 220-222 du fichier HomeScreen.js
+- Le style s'affiche aux lignes 383-389 du fichier HomeScreen.js
+
+**Conclusion:**
+
+L'amélioration a été implémentée avec succès. Les utilisateurs sont maintenant clairement informés que:
+- ✅ La photo n'est pas enregistrée de manière permanente
+- ✅ La photo sera supprimée après la génération de la séance
+- ✅ Le message est visible avant et après la sélection de la photo
+
+Le code reste cohérent avec l'architecture existante et améliore la transparence de l'application vis-à-vis de l'utilisateur.

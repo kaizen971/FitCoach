@@ -217,6 +217,9 @@ export default function HomeScreen({ navigation }) {
               </View>
             )}
           </TouchableOpacity>
+          <Text style={styles.warningText}>
+            ⚠️ La photo n'est pas enregistrée et sera supprimée après la génération de la séance.
+          </Text>
         </View>
 
         <TouchableOpacity
@@ -376,5 +379,12 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  warningText: {
+    fontSize: 12,
+    color: '#FFA500',
+    marginTop: 8,
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
 });
